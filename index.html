@@ -11,435 +11,101 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box
-        }
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #060204;
+        *{margin:0;padding:0;box-sizing:border-box}
+        html,body{width:100%;height:100%;overflow:hidden;background:#060204;color:#fff;font-family:'Tajawal','Inter',sans-serif;font-weight:300;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+        #matrix-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:10;background:#060204}
+        #countdown-overlay{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+        #countdown-text{font-family:'Playfair Display',serif;font-weight:300;font-size:clamp(3rem,14vw,8rem);color:#ff2a75;text-shadow:0 0 80px rgba(255,42,117,.3),0 0 160px rgba(255,42,117,.1);opacity:0;transform:scale(.7) translateY(20px);transition:all 1.2s cubic-bezier(.23,1,.32,1);letter-spacing:.12em;text-align:center;line-height:1.1}
+        #countdown-text.show{opacity:1;transform:scale(1) translateY(0)}
+        #enter-btn{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;font-family:'Tajawal','Inter',sans-serif;font-weight:500;font-size:clamp(1.1rem,4vw,1.8rem);color:#fff;background:linear-gradient(135deg,rgba(255,42,117,.9),rgba(180,20,80,.85));border:0;padding:16px 40px;border-radius:60px;cursor:pointer;opacity:0;transition:all .5s cubic-bezier(.23,1,.32,1);letter-spacing:.05em;display:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 0 40px rgba(255,42,117,.5),0 8px 30px rgba(0,0,0,.5);min-height:60px;max-width:90vw;white-space:nowrap;text-align:center;touch-action:manipulation}
+        #enter-btn.show{display:block;opacity:1;animation:btnBreath 3s ease-in-out infinite}
+        @keyframes btnBreath{0%,100%{box-shadow:0 0 30px rgba(255,42,117,.4),0 8px 20px rgba(0,0,0,.4);transform:translate(-50%,-50%) scale(1)}50%{box-shadow:0 0 60px rgba(255,42,117,.8),0 8px 30px rgba(0,0,0,.6);transform:translate(-50%,-50%) scale(1.05)}}
+        #enter-btn:hover{transform:translate(-50%,-50%) scale(1.05);background:linear-gradient(135deg,#ff3c82,#c81e5a);box-shadow:0 0 60px rgba(255,42,117,.9)}
+        #enter-btn:active{transform:translate(-50%,-50%) scale(.98)}
+        #book-container{position:fixed;inset:0;width:100vw;height:100vh;z-index:40;background:radial-gradient(ellipse at 50% 60%,#0d060a,#060204);display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px;overflow:hidden}
+        #book-container.active{display:flex;animation:bookReveal 1.2s cubic-bezier(.23,1,.32,1) forwards}
+        @keyframes bookReveal{0%{opacity:0;transform:scale(.92) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+        #sparkle-container{position:fixed;inset:0;width:100vw;height:100vh;z-index:41;pointer-events:none;overflow:hidden}
+        .sparkle{position:absolute;border-radius:50%;animation:sparkleDrift linear infinite;opacity:0;background:#fff}
+        @keyframes sparkleDrift{0%{opacity:0;transform:translateY(100vh) scale(.1)}15%{opacity:.6}85%{opacity:.3}100%{opacity:0;transform:translateY(-20vh) scale(.5)}}
+        .book-header{position:relative;z-index:45;text-align:center;margin-bottom:6px;padding:0 12px;width:100%;max-width:560px}
+        .book-header h1{font-family:'Playfair Display','Tajawal',serif;font-weight:700;font-size:clamp(2.2rem,6vw,4rem);color:rgba(255,42,117,.7);letter-spacing:.06em;line-height:1.1;font-style:italic;display:inline-block}
+        .book-header .sub{font-size:clamp(.65rem,1.2vw,.85rem);color:rgba(255,255,255,.25);letter-spacing:.15em;text-transform:uppercase;margin-top:4px}
+        .swiper{position:relative;z-index:45;width:100%;max-width:560px;height:72vh;max-height:680px;padding:12px 0 20px}
+        .swiper-slide{display:flex;flex-direction:column;border-radius:24px;padding:20px 16px;background:rgba(18,8,14,.88);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border:1px solid rgba(255,42,117,.12);box-shadow:0 20px 60px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05);overflow-y:auto;height:auto;max-height:100%;transition:border-color .4s ease;-webkit-overflow-scrolling:touch}
+        .slide-content{width:100%;height:100%;display:flex;flex-direction:column;gap:16px;overflow-y:auto;padding:4px;align-items:center;-webkit-overflow-scrolling:touch}
+        .slide-content .cursive{font-family:'Tajawal','Great Vibes',cursive;color:#ff2a75;text-align:center;line-height:1.2}
+        .cursive-lg{font-size:clamp(2rem,6vw,4rem);opacity:.9}
+        .cursive-md{font-size:clamp(1.2rem,3.5vw,2.2rem);opacity:.75}
+        .divider-thin{width:80px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,42,117,.3),transparent);margin:2px auto}
+        .insta-quote-box{width:100%;background:#fbf5f3;color:#523e44;border-radius:20px;padding:22px 20px;position:relative;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;min-height:110px}
+        .insta-text{font-family:'Great Vibes','Tajawal',cursive,serif;font-size:clamp(1.2rem,3vw,1.6rem);text-align:center;line-height:1.6;color:#724c58;outline:none;width:100%;white-space:pre-wrap;unicode-bidi:plaintext}
+        .insta-hearts{position:absolute;top:14px;right:16px;color:#ff528a;font-size:.9rem;pointer-events:none;font-family:'Great Vibes',cursive}
+        .insta-grid-container{width:100%;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.8);border-radius:20px;padding:10px;box-shadow:0 8px 25px rgba(0,0,0,.3)}
+        .love-message-card{width:100%;max-width:400px;margin:0 auto;background:linear-gradient(145deg,#fff5f7,#ffe8ef);border-radius:24px;padding:30px 25px;box-shadow:0 15px 40px rgba(255,42,117,.2);border:2px solid rgba(255,42,117,.3);position:relative;overflow:hidden;text-align:center}
+        .love-message-card:before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,42,117,.08) 20%,transparent 70%);animation:floatHearts 10s linear infinite}
+        @keyframes floatHearts{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+        .love-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,2.5rem);color:#c81e5b;margin-bottom:10px;position:relative;z-index:1}
+        .love-message{font-family:'Great Vibes','Tajawal',cursive;font-size:clamp(1.3rem,3.5vw,1.8rem);color:#5c3e4a;line-height:1.8;position:relative;z-index:1;white-space:pre-wrap;outline:none;min-height:100px}
+        .love-signature{font-size:.9rem;color:#b8869a;margin-top:15px;position:relative;z-index:1}
+        .typewriter-cursor{display:inline-block;width:2px;height:1em;background:#ff2a75;margin:0 2px;vertical-align:middle;animation:blinkCursor .8s infinite}
+        @keyframes blinkCursor{0%,100%{opacity:1}50%{opacity:0}}
+        .photo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
+        .photo-item{position:relative;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.05)}
+        .photo-item.pop{animation:photoPopIn .6s cubic-bezier(.34,1.56,.64,1) forwards}
+        @keyframes photoPopIn{0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:scale(1)}}
+        .photo-item img{width:100%;height:100%;object-fit:cover}
+        .delete-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:0;color:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;z-index:5}
+        .photo-item:hover .delete-btn{opacity:1}
+        .add-photo-btn{aspect-ratio:4/5;border-radius:12px;border:2px dashed rgba(255,42,117,.3);background:rgba(255,42,117,.03);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.6);font-size:.75rem;gap:6px}
+        .add-photo-btn:hover{border-color:rgba(255,42,117,.6);background:rgba(255,42,117,.1);color:#fff}
+        
+        /* ===== أزرار متناسقة ===== */
+        .btn-glass {
+            background: linear-gradient(135deg, rgba(255,42,117,.2), rgba(15,6,12,.8));
+            border: 1px solid rgba(255,42,117,.35);
             color: #fff;
-            font-family: 'Tajawal', 'Inter', sans-serif;
-            font-weight: 300;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all .3s ease;
+            touch-action: manipulation;
             user-select: none;
-            -webkit-tap-highlight-color: transparent
+            -webkit-tap-highlight-color: transparent;
         }
-        #matrix-canvas {
+        .btn-glass:hover {
+            background: linear-gradient(135deg, rgba(255,42,117,.35), rgba(15,6,12,.9));
+            border-color: rgba(255,42,117,.6);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255,42,117,.25);
+        }
+        .btn-glass:active { transform: scale(.94); }
+
+        /* زر الموسيقى */
+        #music-toggle {
             position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 10;
-            background: #060204
-        }
-        #countdown-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none
-        }
-        #countdown-text {
-            font-family: 'Playfair Display', serif;
-            font-weight: 300;
-            font-size: clamp(3rem, 14vw, 8rem);
-            color: #ff2a75;
-            text-shadow: 0 0 80px rgba(255, 42, 117, .3), 0 0 160px rgba(255, 42, 117, .1);
-            opacity: 0;
-            transform: scale(.7) translateY(20px);
-            transition: all 1.2s cubic-bezier(.23, 1, .32, 1);
-            letter-spacing: .12em;
-            text-align: center;
-            line-height: 1.1
-        }
-        #countdown-text.show {
-            opacity: 1;
-            transform: scale(1) translateY(0)
-        }
-        #enter-btn {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 30;
-            font-family: 'Tajawal', 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: clamp(1.1rem, 4vw, 1.8rem);
-            color: #fff;
-            background: linear-gradient(135deg, rgba(255, 42, 117, .9), rgba(180, 20, 80, .85));
-            border: 0;
-            padding: 16px 40px;
-            border-radius: 60px;
-            cursor: pointer;
-            opacity: 0;
-            transition: all .5s cubic-bezier(.23, 1, .32, 1);
-            letter-spacing: .05em;
-            display: none;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 0 40px rgba(255, 42, 117, .5), 0 8px 30px rgba(0, 0, 0, .5);
-            min-height: 60px;
-            max-width: 90vw;
-            white-space: nowrap;
-            text-align: center;
-            touch-action: manipulation
-        }
-        #enter-btn.show {
-            display: block;
-            opacity: 1;
-            animation: btnBreath 3s ease-in-out infinite
-        }
-        @keyframes btnBreath {
-            0%,
-            100% {
-                box-shadow: 0 0 30px rgba(255, 42, 117, .4), 0 8px 20px rgba(0, 0, 0, .4);
-                transform: translate(-50%, -50%) scale(1)
-            }
-            50% {
-                box-shadow: 0 0 60px rgba(255, 42, 117, .8), 0 8px 30px rgba(0, 0, 0, .6);
-                transform: translate(-50%, -50%) scale(1.05)
-            }
-        }
-        #enter-btn:hover {
-            transform: translate(-50%, -50%) scale(1.05);
-            background: linear-gradient(135deg, #ff3c82, #c81e5a);
-            box-shadow: 0 0 60px rgba(255, 42, 117, .9)
-        }
-        #enter-btn:active {
-            transform: translate(-50%, -50%) scale(.98)
-        }
-        #book-container {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 40;
-            background: radial-gradient(ellipse at 50% 60%, #0d060a, #060204);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            overflow: hidden
-        }
-        #book-container.active {
-            display: flex;
-            animation: bookReveal 1.2s cubic-bezier(.23, 1, .32, 1) forwards
-        }
-        @keyframes bookReveal {
-            0% {
-                opacity: 0;
-                transform: scale(.92) translateY(20px)
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0)
-            }
-        }
-        #sparkle-container {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 41;
-            pointer-events: none;
-            overflow: hidden
-        }
-        .sparkle {
-            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            z-index: 55;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
-            animation: sparkleDrift linear infinite;
-            opacity: 0;
-            background: #fff
-        }
-        @keyframes sparkleDrift {
-            0% {
-                opacity: 0;
-                transform: translateY(100vh) scale(.1)
-            }
-            15% {
-                opacity: .6
-            }
-            85% {
-                opacity: .3
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-20vh) scale(.5)
-            }
-        }
-        .book-header {
-            position: relative;
-            z-index: 45;
-            text-align: center;
-            margin-bottom: 6px;
-            padding: 0 12px;
-            width: 100%;
-            max-width: 560px
-        }
-        .book-header h1 {
-            font-family: 'Playfair Display', 'Tajawal', serif;
-            font-weight: 700;
-            font-size: clamp(2.2rem, 6vw, 4rem);
-            color: rgba(255, 42, 117, .7);
-            letter-spacing: .06em;
-            line-height: 1.1;
-            font-style: italic;
-            display: inline-block
-        }
-        .book-header .sub {
-            font-size: clamp(.65rem, 1.2vw, .85rem);
-            color: rgba(255, 255, 255, .25);
-            letter-spacing: .15em;
-            text-transform: uppercase;
-            margin-top: 4px
-        }
-        .swiper {
-            position: relative;
-            z-index: 45;
-            width: 100%;
-            max-width: 560px;
-            height: 72vh;
-            max-height: 680px;
-            padding: 12px 0 20px
-        }
-        .swiper-slide {
-            display: flex;
-            flex-direction: column;
-            border-radius: 24px;
-            padding: 20px 16px;
-            background: rgba(18, 8, 14, .88);
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            border: 1px solid rgba(255, 42, 117, .12);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .05);
-            overflow-y: auto;
-            height: auto;
-            max-height: 100%;
-            transition: border-color .4s ease
-        }
-        .slide-content {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow-y: auto;
-            padding: 4px;
-            align-items: center
-        }
-        .slide-content .cursive {
-            font-family: 'Tajawal', 'Great Vibes', cursive;
-            color: #ff2a75;
-            text-align: center;
-            line-height: 1.2
-        }
-        .cursive-lg {
-            font-size: clamp(2rem, 6vw, 4rem);
-            opacity: .9
-        }
-        .cursive-md {
-            font-size: clamp(1.2rem, 3.5vw, 2.2rem);
-            opacity: .75
-        }
-        .divider-thin {
-            width: 80px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 42, 117, .3), transparent);
-            margin: 2px auto
-        }
-        .insta-quote-box {
-            width: 100%;
-            background: #fbf5f3;
-            color: #523e44;
-            border-radius: 20px;
-            padding: 22px 20px;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 110px
-        }
-        .insta-text {
-            font-family: 'Great Vibes', 'Tajawal', cursive, serif;
-            font-size: clamp(1.2rem, 3vw, 1.6rem);
-            text-align: center;
-            line-height: 1.6;
-            color: #724c58;
-            outline: none;
-            width: 100%;
-            white-space: pre-wrap;
-            unicode-bidi: plaintext
-        }
-        .insta-hearts {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            color: #ff528a;
-            font-size: .9rem;
-            pointer-events: none;
-            font-family: 'Great Vibes', cursive
-        }
-        .insta-grid-container {
-            width: 100%;
-            background: rgba(255, 255, 255, .03);
-            border: 1.5px solid rgba(255, 255, 255, .8);
-            border-radius: 20px;
-            padding: 10px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, .3)
-        }
-        .love-message-card {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            background: linear-gradient(145deg, #fff5f7, #ffe8ef);
-            border-radius: 24px;
-            padding: 30px 25px;
-            box-shadow: 0 15px 40px rgba(255, 42, 117, .2);
-            border: 2px solid rgba(255, 42, 117, .3);
-            position: relative;
-            overflow: hidden;
-            text-align: center
-        }
-        .love-message-card:before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 42, 117, .08) 20%, transparent 70%);
-            animation: floatHearts 10s linear infinite
-        }
-        @keyframes floatHearts {
-            0% {
-                transform: rotate(0)
-            }
-            100% {
-                transform: rotate(360deg)
-            }
-        }
-        .love-title {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
-            color: #c81e5b;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1
-        }
-        .love-message {
-            font-family: 'Great Vibes', 'Tajawal', cursive;
-            font-size: clamp(1.3rem, 3.5vw, 1.8rem);
-            color: #5c3e4a;
-            line-height: 1.8;
-            position: relative;
-            z-index: 1;
-            white-space: pre-wrap;
-            outline: none;
-            min-height: 100px
-        }
-        .love-signature {
-            font-size: .9rem;
-            color: #b8869a;
-            margin-top: 15px;
-            position: relative;
-            z-index: 1
-        }
-        .typewriter-cursor {
-            display: inline-block;
-            width: 2px;
-            height: 1em;
-            background: #ff2a75;
-            margin: 0 2px;
-            vertical-align: middle;
-            animation: blinkCursor .8s infinite
-        }
-        @keyframes blinkCursor {
-            0%,
-            100% {
-                opacity: 1
-            }
-            50% {
-                opacity: 0
-            }
-        }
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            width: 100%
-        }
-        .photo-item {
-            position: relative;
-            aspect-ratio: 4/5;
-            border-radius: 12px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, .05)
-        }
-        .photo-item.pop {
-            animation: photoPopIn .6s cubic-bezier(.34, 1.56, .64, 1) forwards
-        }
-        @keyframes photoPopIn {
-            0% {
-                opacity: 0;
-                transform: scale(.5)
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1)
-            }
-        }
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover
-        }
-        .delete-btn {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: rgba(0, 0, 0, .75);
-            border: 0;
-            color: #fff;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+            font-size: 1.2rem;
             cursor: pointer;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            opacity: 0;
-            z-index: 5
+            padding: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
         }
-        .photo-item:hover .delete-btn {
-            opacity: 1
+        #music-toggle.show { display: flex; }
+        #music-toggle.playing {
+            border-color: rgba(255,42,117,.7);
+            box-shadow: 0 0 40px rgba(255,42,117,.25), inset 0 0 20px rgba(255,42,117,.05);
+            animation: musicPulse 2s ease-in-out infinite;
         }
-        .add-photo-btn {
-            aspect-ratio: 4/5;
-            border-radius: 12px;
-            border: 2px dashed rgba(255, 42, 117, .3);
-            background: rgba(255, 42, 117, .03);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: rgba(255, 255, 255, .6);
-            font-size: .75rem;
-            gap: 6px
-        }
-        .add-photo-btn:hover {
-            border-color: rgba(255, 42, 117, .6);
-            background: rgba(255, 42, 117, .1);
-            color: #fff
+        @keyframes musicPulse {
+            0%,100% { box-shadow: 0 0 20px rgba(255,42,117,.15), 0 4px 20px rgba(0,0,0,.4); }
+            50% { box-shadow: 0 0 50px rgba(255,42,117,.35), 0 4px 30px rgba(0,0,0,.5); }
         }
 
         /* زر التخصيص */
@@ -448,77 +114,56 @@
             bottom: 24px;
             right: 24px;
             z-index: 55;
-            background: linear-gradient(135deg, rgba(255, 42, 117, .2), rgba(15, 6, 12, .8));
-            border: 1px solid rgba(255, 42, 117, .35);
-            color: #fff;
             border-radius: 50px;
             padding: 10px 22px;
             font-size: .75rem;
             cursor: pointer;
-            font-family: 'Tajawal', 'Inter', sans-serif;
+            font-family: 'Tajawal','Inter',sans-serif;
             display: none;
             align-items: center;
             gap: 8px;
-            backdrop-filter: blur(16px);
-            transition: all .3s ease
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
         }
-        #settings-toggle:hover {
-            background: linear-gradient(135deg, rgba(255, 42, 117, .35), rgba(15, 6, 12, .9));
-            border-color: rgba(255, 42, 117, .6);
-            transform: scale(1.03)
-        }
+        #settings-toggle.show { display: flex; }
 
-        /* زر الموسيقى الجديد */
-        #music-toggle {
+        /* زر العودة للغلاف */
+        #back-to-cover-btn {
             position: fixed;
-            bottom: 24px;
-            left: 24px;
+            bottom: 85px;
+            right: 24px;
             z-index: 55;
-            background: linear-gradient(135deg, rgba(255, 42, 117, .2), rgba(15, 6, 12, .8));
-            border: 1px solid rgba(255, 42, 117, .35);
-            color: #fff;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            width: 46px;
-            height: 46px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(16px);
-            transition: all .3s ease;
-            padding: 0;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .4);
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
         }
-        #music-toggle.show {
-            display: flex
+        #back-to-cover-btn.show { display: flex; }
+
+        /* زر الإغلاق */
+        #close-book-btn {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 55;
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            font-family: 'Tajawal',sans-serif;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
         }
-        #music-toggle:hover {
-            background: linear-gradient(135deg, rgba(255, 42, 117, .4), rgba(15, 6, 12, .9));
-            border-color: rgba(255, 42, 117, .7);
-            transform: scale(1.08);
-            box-shadow: 0 0 30px rgba(255, 42, 117, .3)
-        }
-        #music-toggle:active {
-            transform: scale(.94)
-        }
-        #music-toggle.playing {
-            border-color: rgba(255, 42, 117, .7);
-            box-shadow: 0 0 40px rgba(255, 42, 117, .25), inset 0 0 20px rgba(255, 42, 117, .05);
-            animation: musicPulse 2s ease-in-out infinite
-        }
-        @keyframes musicPulse {
-            0%,
-            100% {
-                box-shadow: 0 0 20px rgba(255, 42, 117, .15), 0 4px 20px rgba(0, 0, 0, .4)
-            }
-            50% {
-                box-shadow: 0 0 50px rgba(255, 42, 117, .35), 0 4px 30px rgba(0, 0, 0, .5)
-            }
-        }
+        #close-book-btn.show { display: flex; }
+        #close-book-btn::before { content: "✕"; margin-left: 6px; }
 
         /* لوحة الإعدادات */
         .settings-panel {
@@ -526,193 +171,89 @@
             bottom: 85px;
             right: 24px;
             z-index: 50;
-            background: rgba(16, 8, 14, .94);
+            background: rgba(16,8,14,.94);
             backdrop-filter: blur(28px);
-            border: 1px solid rgba(255, 42, 117, .3);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255,42,117,.3);
             border-radius: 24px;
             padding: 22px;
             width: 320px;
             display: none;
             flex-direction: column;
             gap: 16px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, .9)
+            box-shadow: 0 20px 50px rgba(0,0,0,.9);
         }
-        .settings-panel.open {
-            display: flex;
-            animation: panelFadeIn .4s ease forwards
-        }
-        @keyframes panelFadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(20px) scale(.95)
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1)
-            }
-        }
-        .settings-header,
-        .setting-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px
-        }
-        .settings-header h3,
-        .setting-row label {
-            font-size: .8rem;
-            color: rgba(255, 255, 255, .7);
-            font-weight: 400
-        }
-        .settings-close-btn {
-            background: none;
-            border: 0;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 1.2rem
-        }
-        .setting-row select,
-        .setting-row input[type=number] {
-            background: rgba(255, 255, 255, .05);
-            border: 1px solid rgba(255, 42, 117, .2);
+        .settings-panel.open { display: flex; animation: panelFadeIn .4s ease forwards; }
+        @keyframes panelFadeIn { 0% { opacity:0; transform: translateY(20px) scale(.95); } 100% { opacity:1; transform: translateY(0) scale(1); } }
+        .settings-header, .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .settings-header h3, .setting-row label { font-size: .8rem; color: rgba(255,255,255,.7); font-weight: 400; }
+        .settings-close-btn { background: none; border: 0; color: #aaa; cursor: pointer; font-size: 1.2rem; }
+        .setting-row select, .setting-row input[type=number] {
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,42,117,.2);
             border-radius: 12px;
             padding: 6px 12px;
             color: #fff;
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Tajawal',sans-serif;
             font-size: .75rem;
-            outline: none
+            outline: none;
         }
-        .setting-row input[type=color] {
-            border: 0;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            cursor: pointer;
-            background: none
-        }
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, .08);
-            padding-top: 14px
-        }
+        .setting-row input[type=color] { border:0; width:34px; height:34px; border-radius:50%; cursor:pointer; background:none; }
+        .action-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; border-top:1px solid rgba(255,255,255,.08); padding-top:14px; }
         .btn-modern {
-            background: linear-gradient(135deg, rgba(255, 42, 117, .25), rgba(255, 42, 117, .05));
-            border: 1px solid rgba(255, 42, 117, .35);
+            background: linear-gradient(135deg, rgba(255,42,117,.25), rgba(255,42,117,.05));
+            border: 1px solid rgba(255,42,117,.35);
             color: #fff;
             padding: 8px 16px;
             border-radius: 14px;
             cursor: pointer;
-            font-family: 'Tajawal', 'Inter', sans-serif;
+            font-family: 'Tajawal','Inter',sans-serif;
             font-size: .75rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px
+            gap: 6px;
+            transition: all .3s ease;
+        }
+        .btn-modern:hover {
+            background: linear-gradient(135deg, rgba(255,42,117,.4), rgba(255,42,117,.15));
+            border-color: rgba(255,42,117,.6);
+            transform: scale(1.02);
         }
         .btn-modern-danger {
-            background: linear-gradient(135deg, rgba(255, 50, 50, .2), rgba(200, 0, 0, .05));
-            border-color: rgba(255, 50, 50, .3);
-            color: #ffb3b3
+            background: linear-gradient(135deg, rgba(255,50,50,.2), rgba(200,0,0,.05));
+            border-color: rgba(255,50,50,.3);
+            color: #ffb3b3;
         }
-        #back-to-cover-btn,
-        #close-book-btn {
-            position: fixed;
-            z-index: 55;
-            background: rgba(18, 8, 14, .7);
-            border: 1px solid rgba(255, 42, 117, .2);
-            color: rgba(255, 255, 255, .7);
-            cursor: pointer;
-            backdrop-filter: blur(8px)
-        }
-        #back-to-cover-btn {
-            bottom: 24px;
-            right: 24px;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem
-        }
-        #close-book-btn {
-            top: 18px;
-            left: 18px;
-            border-radius: 30px;
-            padding: 6px 16px;
-            font-size: .65rem;
-            text-transform: uppercase;
-            display: none;
-            letter-spacing: .1em;
-            font-family: 'Tajawal', sans-serif
-        }
-        #back-to-cover-btn.show,
-        #close-book-btn.show {
-            display: flex
-        }
-        .hidden-file-input {
-            display: none
+        .btn-modern-danger:hover {
+            background: linear-gradient(135deg, rgba(255,50,50,.35), rgba(200,0,0,.1));
+            border-color: rgba(255,50,50,.5);
         }
 
+        .hidden-file-input { display: none; }
+
+        /* ===== استجابة للشاشات الصغيرة ===== */
         @media(max-width:600px) {
-            .settings-panel {
-                right: 12px;
-                bottom: 80px;
-                width: min(320px, calc(100vw - 24px))
-            }
-            #settings-toggle {
-                right: 12px;
-                bottom: 14px;
-                padding: 8px 16px;
-                font-size: .65rem
-            }
-            #music-toggle {
-                left: 12px;
-                bottom: 14px;
-                width: 42px;
-                height: 42px;
-                font-size: 1rem
-            }
-            #back-to-cover-btn {
-                bottom: 14px;
-                right: 14px;
-                width: 40px;
-                height: 40px;
-                font-size: 1rem
-            }
-            .swiper {
-                height: 74vh
-            }
-            .swiper-slide {
-                padding: 16px 12px
-            }
+            .settings-panel { right:12px; bottom:80px; width: min(320px, calc(100vw - 24px)); }
+            #settings-toggle { right:12px; bottom:14px; padding:8px 16px; font-size:.65rem; }
+            #music-toggle { left:12px; bottom:14px; width:42px; height:42px; font-size:1rem; }
+            #back-to-cover-btn { right:12px; bottom:76px; width:40px; height:40px; font-size:1rem; }
+            #close-book-btn { top:14px; right:14px; padding:6px 14px; font-size:.6rem; }
+            .swiper { height:74vh; }
+            .swiper-slide { padding:16px 12px; }
         }
         @media(max-width:420px) {
-            #music-toggle {
-                left: 12px;
-                width: 38px;
-                height: 38px;
-                font-size: .9rem
-            }
-            #settings-toggle {
-                padding: 6px 14px;
-                font-size: .6rem;
-                gap: 4px
-            }
-            #settings-toggle .label-text {
-                display: none
-            }
+            #music-toggle { left:12px; width:38px; height:38px; font-size:.9rem; }
+            #settings-toggle { padding:6px 14px; font-size:.6rem; gap:4px; }
+            #settings-toggle .label-text { display: none; }
+            #back-to-cover-btn { right:12px; bottom:68px; width:36px; height:36px; font-size:.9rem; }
+            #close-book-btn { padding:4px 12px; font-size:.55rem; }
         }
     </style>
 </head>
 <body>
     <canvas id="matrix-canvas"></canvas>
-    <div id="countdown-overlay">
-        <div id="countdown-text"></div>
-    </div>
+    <div id="countdown-overlay"><div id="countdown-text"></div></div>
     <button id="enter-btn">افتح كتاب الذكريات</button>
 
     <div id="book-container">
@@ -726,10 +267,11 @@
             <div class="swiper-wrapper" id="swiper-wrapper"></div>
         </div>
 
-        <!-- زر الموسيقى الجديد (تم دمجه مع الكود المطلوب) -->
-        <button id="music-toggle">▶</button>
-
-        <button id="settings-toggle"><span>⚙</span> <span class="label-text">تخصيص</span></button>
+        <!-- جميع الأزرار موحدة التصميم (btn-glass) -->
+        <button id="music-toggle" class="btn-glass" title="تشغيل / إيقاف الموسيقى">▶</button>
+        <button id="settings-toggle" class="btn-glass"><span>⚙</span> <span class="label-text">تخصيص</span></button>
+        <button id="back-to-cover-btn" class="btn-glass" title="العودة للغلاف">⤒</button>
+        <button id="close-book-btn" class="btn-glass">إغلاق</button>
 
         <div class="settings-panel" id="settings-panel">
             <div class="settings-header">
@@ -760,12 +302,8 @@
                 <button class="btn-modern" id="replay-typewriter-btn">↺ إعادة تأثير الكتابة</button>
             </div>
         </div>
-
-        <button id="back-to-cover-btn" title="العودة للغلاف">⤒</button>
-        <button id="close-book-btn">✕ إغلاق</button>
     </div>
 
-    <!-- عنصر الصوت (تم وضعه مع الكود المطلوب) -->
     <audio id="backgroundMusic" loop>
         <source src="music.mp3" type="audio/mpeg">
     </audio>
@@ -774,417 +312,514 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // ==================== MATRIX RAIN ====================
-        (function matrixRain() {
-            const canvas = document.getElementById('matrix-canvas'),
-                ctx = canvas.getContext('2d');
-            let W, H, active = true,
-                frame;
+        (function() {
+            'use strict';
 
-            function resize() { W = canvas.width = innerWidth;
-                H = canvas.height = innerHeight }
-            resize();
-            addEventListener('resize', resize);
-            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ♥♡❤';
-            let drops = [];
+            // ===== المطر =====
+            (function matrixRain() {
+                const canvas = document.getElementById('matrix-canvas');
+                const ctx = canvas.getContext('2d');
+                let W, H, active = true,
+                    frameId = null;
+                const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ♥♡❤';
+                let drops = [];
+                const COLUMN_WIDTH = 14;
+                let columns = 0;
 
-            function resetDrops() { drops = Array(Math.floor(W / 14)).fill(0).map(() => Math.floor(Math.random() * -100)) }
-            resetDrops();
-            addEventListener('resize', resetDrops);
+                function resize() {
+                    W = canvas.width = window.innerWidth;
+                    H = canvas.height = window.innerHeight;
+                    columns = Math.floor(W / COLUMN_WIDTH);
+                    resetDrops();
+                }
 
-            function draw() {
+                function resetDrops() {
+                    drops = new Array(columns).fill(0).map(() => Math.floor(Math.random() * -100));
+                }
+
+                function draw() {
+                    if (!active) return;
+                    ctx.fillStyle = 'rgba(6,2,4,.05)';
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.font = '12px monospace';
+                    for (let i = 0; i < drops.length; i++) {
+                        const y = drops[i] * COLUMN_WIDTH;
+                        ctx.fillStyle = `rgba(255,42,117,${Math.random() * 0.5 + 0.2})`;
+                        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * COLUMN_WIDTH, y);
+                        if (y > H && Math.random() > 0.975) drops[i] = 0;
+                        drops[i]++;
+                    }
+                    frameId = requestAnimationFrame(draw);
+                }
+
+                window.stopMatrix = function() {
+                    active = false;
+                    if (frameId) { cancelAnimationFrame(frameId);
+                        frameId = null; }
+                    canvas.style.display = 'none';
+                };
+                window.startMatrix = function() {
+                    if (active) return;
+                    active = true;
+                    canvas.style.display = 'block';
+                    draw();
+                };
+
+                window.addEventListener('resize', resize, { passive: true });
+                resize();
+                draw();
+            })();
+
+            // ===== البيانات =====
+            let bookData = {
+                slides: [
+                    { type: 'cover', title: 'ذكرياتنا الخاصة', recipient: 'محمد أحمد', emojis: ['🌙', '✨'] },
+                    { type: 'love_message', title: 'رسالة حب', message: 'أنتِ أجمل ما حدث في حياتي، وكل يوم يمر أزداد حباً لكِ. أحبكِ بجنون.',
+                        signature: 'بحبك دائماً ♥' },
+                    { type: 'insta_card', content: "طالما أنتِ تبتسمين، أنا سعيد. ابقي سعيدة يا حبيبتي.", photos: [
+                            { id: 'p1',
+                                url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80' },
+                            { id: 'p2',
+                                url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80' }
+                        ] },
+                    { type: 'insta_card', content: 'كل لحظة معك هي ذكرى جميـلة لا تُنسى..', photos: [
+                            { id: 'p3',
+                                url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80' }
+                        ] },
+                    { type: 'final', title: 'للأبد', message: '"أنتِ يومي وكل غدي."' }
+                ],
+                settings: { fontSize: 16, fontFamily: 'Tajawal', backgroundColor: '#0d060a' }
+            };
+
+            function loadSavedData() {
+                try { const saved = localStorage.getItem('memoryBookData'); if (saved) bookData = JSON.parse(saved); } catch (
+                e) { /* ignore */ }
+                syncSettingsUI();
+            }
+
+            function saveData() {
+                try { localStorage.setItem('memoryBookData', JSON.stringify(bookData)); } catch (e) { /* ignore */ }
+            }
+
+            // ===== الكتابة التلقائية =====
+            let typewriterTimeouts = [];
+
+            function clearTypewriterTimeouts() {
+                typewriterTimeouts.forEach(t => clearTimeout(t));
+                typewriterTimeouts = [];
+            }
+
+            function typeWriter(el, text, speed = 35) {
+                clearTypewriterTimeouts();
+                el.innerHTML = '';
+                const span = document.createElement('span');
+                const cursor = document.createElement('span');
+                cursor.className = 'typewriter-cursor';
+                el.append(span, cursor);
+                let i = 0;
+
+                function type() {
+                    if (i < text.length) {
+                        span.textContent += text[i++];
+                        typewriterTimeouts.push(setTimeout(type, speed));
+                    } else {
+                        setTimeout(() => cursor.remove(), 2000);
+                    }
+                }
+                type();
+            }
+
+            function triggerTypewriterOnActiveSlide() {
+                if (!swiperInstance) return;
+                const slides = document.querySelectorAll('.swiper-slide');
+                const active = slides[swiperInstance.activeIndex];
                 if (!active) return;
-                ctx.fillStyle = 'rgba(6,2,4,.05)';
-                ctx.fillRect(0, 0, W, H);
-                ctx.font = '12px monospace';
-                drops.forEach((d, i) => {
-                    const y = d * 14;
-                    ctx.fillStyle = `rgba(255,42,117,${Math.random()*.5+.2})`;
-                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 14, y);
-                    if (y > H && Math.random() > .975) drops[i] = 0;
-                    drops[i]++
+                active.querySelectorAll('.typewriter-text').forEach(el => {
+                    const fullText = el.dataset.fulltext || el.innerText;
+                    typeWriter(el, fullText);
                 });
-                frame = requestAnimationFrame(draw)
             }
-            window.stopMatrix = () => { active = false;
-                cancelAnimationFrame(frame);
-                canvas.style.display = 'none' };
-            window.startMatrix = () => { if (active) return;
-                active = true;
-                canvas.style.display = 'block';
-                draw() };
-            draw();
-        })();
 
-        // ==================== BOOK DATA ====================
-        let bookData = {
-            slides: [
-                { type: 'cover', title: 'ذكرياتنا الخاصة', recipient: 'محمد أحمد', emojis: ['🌙', '✨'] },
-                { type: 'love_message', title: 'رسالة حب', message: 'أنتِ أجمل ما حدث في حياتي، وكل يوم يمر أزداد حباً لكِ. أحبكِ بجنون.',
-                    signature: 'بحبك دائماً ♥' },
-                { type: 'insta_card', content: "طالما أنتِ تبتسمين، أنا سعيد. ابقي سعيدة يا حبيبتي.", photos: [
-                        { id: 'p1',
-                            url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80' },
-                        { id: 'p2',
-                            url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80' }
-                    ] },
-                { type: 'insta_card', content: 'كل لحظة معك هي ذكرى جميـلة لا تُنسى..', photos: [
-                        { id: 'p3',
-                            url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80' }
-                    ] },
-                { type: 'final', title: 'للأبد', message: '"أنتِ يومي وكل غدي."' }
-            ],
-            settings: { fontSize: 16, fontFamily: 'Tajawal', backgroundColor: '#0d060a' }
-        };
-
-        function loadSavedData() {
-            try { const saved = localStorage.getItem('memoryBookData'); if (saved) bookData = JSON.parse(saved) } catch (
-                e) { console.warn(e) }
-            syncSettingsUI()
-        }
-
-        function saveData() { try { localStorage.setItem('memoryBookData', JSON.stringify(bookData)) } catch (e) { console
-                    .error(e) } }
-        addEventListener('beforeunload', saveData);
-
-        // ==================== TYPEWRITER ====================
-        let typewriterTimeouts = [];
-
-        function clearTypewriterTimeouts() { typewriterTimeouts.forEach(clearTimeout);
-            typewriterTimeouts = [] }
-
-        function typeWriter(el, text, speed = 35) {
-            clearTypewriterTimeouts();
-            el.innerHTML = '';
-            const span = document.createElement('span'),
-                cursor = document.createElement('span');
-            cursor.className = 'typewriter-cursor';
-            el.append(span, cursor);
-            let i = 0;
-
-            function type() {
-                if (i < text.length) {
-                    span.textContent += text[i++];
-                    typewriterTimeouts.push(setTimeout(type, speed))
-                } else setTimeout(() => cursor.remove(), 2000)
+            // ===== أدوات =====
+            function esc(str = '') {
+                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g,
+                '&quot;');
             }
-            type()
-        }
 
-        function triggerTypewriterOnActiveSlide() {
-            if (!swiperInstance) return;
-            const active = document.querySelectorAll('.swiper-slide')[swiperInstance.activeIndex];
-            if (!active) return;
-            active.querySelectorAll('.typewriter-text').forEach(el => typeWriter(el, el.dataset.fulltext || el.innerText))
-        }
-
-        // ==================== ESCAPE ====================
-        function esc(str = '') {
-            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-        }
-
-        // ==================== RENDER SLIDES ====================
-        function renderSlides() {
-            const wrapper = document.getElementById('swiper-wrapper');
-            wrapper.innerHTML = '';
-            bookData.slides.forEach((slide, index) => {
-                const div = document.createElement('div');
-                div.className = 'swiper-slide';
-                div.dataset.index = index;
-                if (slide.type === 'cover') {
-                    div.innerHTML = `<div class="slide-content" style="justify-content:center;align-items:center;text-align:center">
-                        <h2 class="cursive cursive-lg" dir="auto">${esc(slide.title)}</h2><div class="divider-thin"></div>
-                        <p class="cursive cursive-md" dir="auto">إلى ${esc(slide.recipient)}</p>
-                        <div style="margin-top:10px;display:flex;gap:12px">${slide.emojis.map(e=>`<span style="font-size:2rem;opacity:.4">${e}</span>`).join('')}</div>
-                    </div>`
-                } else if (slide.type === 'love_message') {
-                    div.innerHTML = `<div class="slide-content" style="justify-content:center"><div class="love-message-card">
-                        <div class="love-title" contenteditable="true" dir="auto">${esc(slide.title)}</div>
-                        <div class="love-message typewriter-text" contenteditable="true" dir="auto" data-fulltext="${esc(slide.message)}">${esc(slide.message)}</div>
-                        <div class="love-signature" contenteditable="true" dir="auto">${esc(slide.signature||'')}</div>
-                    </div></div>`
-                } else if (slide.type === 'insta_card') {
-                    div.innerHTML = `<div class="slide-content" style="justify-content:center">
-                        <div class="insta-quote-box"><div class="insta-hearts">حب</div>
-                        <div class="insta-text typewriter-text" contenteditable="true" dir="auto" data-fulltext="${esc(slide.content)}">${esc(slide.content)}</div></div>
-                        <div class="insta-grid-container">${renderPhotoGrid(slide.photos,index)}</div>
-                    </div>`
-                } else if (slide.type === 'final') {
-                    div.innerHTML = `<div class="slide-content" style="justify-content:center;align-items:center;text-align:center">
-                        <h2 class="cursive cursive-lg" dir="auto">${esc(slide.title)}</h2><div class="divider-thin"></div>
-                        <p class="insta-text typewriter-text" contenteditable="true" dir="auto" data-fulltext="${esc(slide.message)}" style="color:#fff;font-size:1.2rem">${esc(slide.message)}</p>
-                    </div>`
-                }
-                wrapper.appendChild(div)
-            });
-
-            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
-                el.addEventListener('input', function() {
-                    const idx = +this.closest('.swiper-slide').dataset.index,
-                        slide = bookData.slides[idx];
-                    let field = null;
-                    if (this.classList.contains('love-title')) field = 'title';
-                    else if (this.classList.contains('love-message')) field = 'message';
-                    else if (this.classList.contains('love-signature')) field = 'signature';
-                    else if (this.classList.contains('insta-text')) field = slide.content !== undefined ?
-                        'content' : 'message';
-                    if (field) { slide[field] = this.innerText;
-                        this.dataset.fulltext = this.innerText;
-                        saveData() }
+            // ===== عرض الشرائح =====
+            function renderPhotoGrid(photos = [], slideIndex) {
+                let html = `<div class="photo-grid" data-slide="${slideIndex}">`;
+                photos.forEach((photo, idx) => {
+                    const isEmoji = photo.url && photo.url.length <= 2;
+                    html +=
+                        `<div class="photo-item pop">${isEmoji?`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem">${photo.url}</div>`:`<img src="${photo.url}" alt="صورة ذكرى" loading="lazy">`}<button class="delete-btn" onclick="deletePhoto(${slideIndex},${idx})">✕</button></div>`;
                 });
-                el.addEventListener('blur', saveData)
-            });
-            applySettings()
-        }
+                if (photos.length < 2) html +=
+                    `<div class="add-photo-btn" onclick="triggerUpload(${slideIndex})"><span style="font-size:1.5rem">+</span><span>إضافة صورة</span></div>`;
+                return html + '</div>';
+            }
 
-        function renderPhotoGrid(photos = [], slideIndex) {
-            let html = `<div class="photo-grid" data-slide="${slideIndex}">`;
-            photos.forEach((photo, idx) => {
-                const isEmoji = photo.url && photo.url.length <= 2;
-                html +=
-                    `<div class="photo-item pop">${isEmoji?`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem">${photo.url}</div>`:`<img src="${photo.url}" alt="صورة ذكرى">`}<button class="delete-btn" onclick="deletePhoto(${slideIndex},${idx})">✕</button></div>`
-            });
-            if (photos.length < 2) html +=
-                `<div class="add-photo-btn" onclick="triggerUpload(${slideIndex})"><span style="font-size:1.5rem">+</span><span>إضافة صورة</span></div>`;
-            return html + '</div>'
-        }
+            function renderSlides() {
+                const wrapper = document.getElementById('swiper-wrapper');
+                wrapper.innerHTML = '';
+                bookData.slides.forEach((slide, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'swiper-slide';
+                    div.dataset.index = index;
+                    if (slide.type === 'cover') {
+                        div.innerHTML =
+                            `<div class="slide-content" style="justify-content:center;align-items:center;text-align:center">
+                            <h2 class="cursive cursive-lg" dir="auto">${esc(slide.title)}</h2><div class="divider-thin"></div>
+                            <p class="cursive cursive-md" dir="auto">إلى ${esc(slide.recipient)}</p>
+                            <div style="margin-top:10px;display:flex;gap:12px">${slide.emojis.map(e=>`<span style="font-size:2rem;opacity:.4">${e}</span>`).join('')}</div>
+                        </div>`;
+                    } else if (slide.type === 'love_message') {
+                        div.innerHTML =
+                            `<div class="slide-content" style="justify-content:center"><div class="love-message-card">
+                            <div class="love-title" contenteditable="true" dir="auto">${esc(slide.title)}</div>
+                            <div class="love-message typewriter-text" contenteditable="true" dir="auto" data-fulltext="${esc(slide.message)}">${esc(slide.message)}</div>
+                            <div class="love-signature" contenteditable="true" dir="auto">${esc(slide.signature||'')}</div>
+                        </div></div>`;
+                    } else if (slide.type === 'insta_card') {
+                        div.innerHTML =
+                            `<div class="slide-content" style="justify-content:center">
+                            <div class="insta-quote-box"><div class="insta-hearts">حب</div>
+                            <div class="insta-text typewriter-text" contenteditable="true" dir="auto" data-fulltext="${esc(slide.content)}">${esc(slide.content)}</div></div>
+                            <div class="insta-grid-container">${renderPhotoGrid(slide.photos,index)}</div>
+                        </div>`;
+                    } else if (slide.type === 'final') {
+                        div.innerHTML =
+                            `<div class="slide-content" style="justify-content:center;align-items:center;text-align:center">
+                            <h2 class="cursive cursive-lg" dir="auto">${esc(slide.title)}</h2><div class="divider-thin"></div>
+                            <p class="insta-text typewriter-text" contenteditable="true" dir="auto" data-fulltext="${esc(slide.message)}" style="color:#fff;font-size:1.2rem">${esc(slide.message)}</p>
+                        </div>`;
+                    }
+                    wrapper.appendChild(div);
+                });
 
-        let swiperInstance = null;
+                document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                    el.addEventListener('input', function() {
+                        const slideEl = this.closest('.swiper-slide');
+                        if (!slideEl) return;
+                        const idx = +slideEl.dataset.index;
+                        const slide = bookData.slides[idx];
+                        if (!slide) return;
+                        let field = null;
+                        if (this.classList.contains('love-title')) field = 'title';
+                        else if (this.classList.contains('love-message')) field = 'message';
+                        else if (this.classList.contains('love-signature')) field = 'signature';
+                        else if (this.classList.contains('insta-text')) field = slide.content !== undefined ?
+                            'content' : 'message';
+                        if (field) {
+                            slide[field] = this.innerText;
+                            this.dataset.fulltext = this.innerText;
+                            saveData();
+                        }
+                    }, { passive: true });
+                    el.addEventListener('blur', saveData, { passive: true });
+                });
+                applySettings();
+            }
 
-        function initSwiper() {
-            if (swiperInstance) swiperInstance.destroy(true, true);
-            swiperInstance = new Swiper('.swiper', {
-                effect: 'cards',
-                grabCursor: true,
-                cardsEffect: { perSlideOffset: 8, perSlideRotate: 2 },
-                speed: 400,
-                on: {
-                    slideChange() { updateBackToCoverButton();
-                        setTimeout(triggerTypewriterOnActiveSlide, 100) },
-                    init() { updateBackToCoverButton();
-                        setTimeout(triggerTypewriterOnActiveSlide, 300) }
+            let swiperInstance = null;
+
+            function initSwiper() {
+                if (swiperInstance) {
+                    swiperInstance.destroy(true, true);
+                    swiperInstance = null;
                 }
-            })
-        }
+                swiperInstance = new Swiper('.swiper', {
+                    effect: 'cards',
+                    grabCursor: true,
+                    cardsEffect: { perSlideOffset: 8, perSlideRotate: 2 },
+                    speed: 400,
+                    on: {
+                        slideChange: function() {
+                            updateBackToCoverButton();
+                            setTimeout(triggerTypewriterOnActiveSlide, 150);
+                        },
+                        init: function() {
+                            updateBackToCoverButton();
+                            setTimeout(triggerTypewriterOnActiveSlide, 300);
+                        }
+                    }
+                });
+            }
 
-        function loadDefaultSlides() { renderSlides();
-            initSwiper() }
+            function loadDefaultSlides() {
+                renderSlides();
+                initSwiper();
+            }
 
-        function updateBackToCoverButton() { document.getElementById('back-to-cover-btn').classList.toggle('show', !!swiperInstance &&
-                swiperInstance.activeIndex > 0) }
-        document.getElementById('back-to-cover-btn').onclick = () => swiperInstance && swiperInstance.slideTo(0);
+            function updateBackToCoverButton() {
+                const btn = document.getElementById('back-to-cover-btn');
+                if (swiperInstance) {
+                    btn.classList.toggle('show', swiperInstance.activeIndex > 0);
+                } else {
+                    btn.classList.remove('show');
+                }
+            }
 
-        function triggerUpload(slideIndex) { const input = document.getElementById('photo-upload-input');
-            input.dataset.slide = slideIndex;
-            input.click() }
-        document.getElementById('photo-upload-input').addEventListener('change', function(e) {
-            const slideIndex = +this.dataset.slide;
-            if (!e.target.files.length || isNaN(slideIndex)) return;
-            Array.from(e.target.files).forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const slide = bookData.slides[slideIndex];
-                    slide.photos = slide.photos || [];
-                    if (slide.photos.length >= 2) return;
-                    slide.photos.push({ url: ev.target.result });
+            document.getElementById('back-to-cover-btn').onclick = function() {
+                if (swiperInstance) swiperInstance.slideTo(0);
+            };
+
+            // ===== رفع الصور =====
+            function triggerUpload(slideIndex) {
+                const input = document.getElementById('photo-upload-input');
+                input.dataset.slide = slideIndex;
+                input.click();
+            }
+
+            document.getElementById('photo-upload-input').addEventListener('change', function(e) {
+                const slideIndex = +this.dataset.slide;
+                if (!e.target.files.length || isNaN(slideIndex)) return;
+                Array.from(e.target.files).forEach(file => {
+                    if (!file.type.startsWith('image/')) return;
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const slide = bookData.slides[slideIndex];
+                        if (!slide) return;
+                        slide.photos = slide.photos || [];
+                        if (slide.photos.length >= 2) return;
+                        slide.photos.push({ url: ev.target.result });
+                        saveData();
+                        renderSlides();
+                        initSwiper();
+                        if (swiperInstance) swiperInstance.slideTo(slideIndex);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                this.value = '';
+            }, { passive: true });
+
+            window.deletePhoto = function(slideIndex, photoIdx) {
+                const slide = bookData.slides[slideIndex];
+                if (!slide) return;
+                slide.photos.splice(photoIdx, 1);
+                saveData();
+                renderSlides();
+                initSwiper();
+                if (swiperInstance) swiperInstance.slideTo(slideIndex);
+            };
+
+            // ===== الإعدادات =====
+            const settingsToggle = document.getElementById('settings-toggle');
+            const panel = document.getElementById('settings-panel');
+            settingsToggle.onclick = function() { panel.classList.toggle('open'); };
+            document.getElementById('settings-close-btn').onclick = function() { panel.classList.remove('open'); };
+
+            function syncSettingsUI() {
+                const s = bookData.settings;
+                document.getElementById('font-size-slider').value = s.fontSize;
+                document.getElementById('font-family-select').value = s.fontFamily;
+                document.getElementById('bg-color-picker').value = s.backgroundColor;
+            }
+
+            function applySettings() {
+                const s = bookData.settings;
+                document.querySelectorAll('.swiper-slide').forEach(slide => {
+                    slide.style.fontSize = s.fontSize + 'px';
+                    slide.style.fontFamily = `'${s.fontFamily}',sans-serif`;
+                });
+                document.getElementById('book-container').style.background =
+                    `radial-gradient(ellipse at 50% 60%,${s.backgroundColor},#060204)`;
+            }
+
+            document.getElementById('font-size-slider').oninput = function() {
+                bookData.settings.fontSize = +this.value;
+                applySettings();
+                saveData();
+            };
+            document.getElementById('font-family-select').onchange = function() {
+                bookData.settings.fontFamily = this.value;
+                applySettings();
+                saveData();
+            };
+            document.getElementById('bg-color-picker').oninput = function() {
+                bookData.settings.backgroundColor = this.value;
+                applySettings();
+                saveData();
+            };
+            document.getElementById('replay-typewriter-btn').onclick = triggerTypewriterOnActiveSlide;
+
+            // ===== إدارة الصفحات =====
+            document.getElementById('add-page-btn').onclick = function() {
+                bookData.slides.splice(bookData.slides.length - 1, 0, { type: 'insta_card',
+                    content: 'اكتب عبارتك الجميلة هنا...', photos: [] });
+                saveData();
+                renderSlides();
+                initSwiper();
+                if (swiperInstance) {
+                    swiperInstance.slideTo(bookData.slides.length - 2);
+                    setTimeout(triggerTypewriterOnActiveSlide, 500);
+                }
+            };
+            document.getElementById('add-love-message-btn').onclick = function() {
+                bookData.slides.splice(bookData.slides.length - 1, 0, { type: 'love_message', title: 'رسالة حب جديدة',
+                    message: 'أكتب هنا أجمل كلمات الحب...', signature: 'بحبك ♥' });
+                saveData();
+                renderSlides();
+                initSwiper();
+                if (swiperInstance) {
+                    swiperInstance.slideTo(bookData.slides.length - 2);
+                    setTimeout(triggerTypewriterOnActiveSlide, 500);
+                }
+            };
+            document.getElementById('remove-page-btn').onclick = function() {
+                if (bookData.slides.length > 2) {
+                    bookData.slides.splice(bookData.slides.length - 2, 1);
                     saveData();
                     renderSlides();
                     initSwiper();
-                    swiperInstance.slideTo(slideIndex)
-                };
-                reader.readAsDataURL(file)
-            });
-            this.value = ''
-        });
+                }
+            };
 
-        function deletePhoto(slideIndex, photoIdx) {
-            bookData.slides[slideIndex].photos.splice(photoIdx, 1);
-            saveData();
-            renderSlides();
-            initSwiper();
-            swiperInstance.slideTo(slideIndex)
-        }
+            // ===== اللمعان =====
+            function generateSparkles() {
+                const container = document.getElementById('sparkle-container');
+                container.innerHTML = '';
+                const count = window.innerWidth < 600 ? 15 : 25;
+                for (let i = 0; i < count; i++) {
+                    const s = document.createElement('div');
+                    s.className = 'sparkle';
+                    const size = Math.random() * 3 + 1;
+                    s.style.width = s.style.height = size + 'px';
+                    s.style.left = Math.random() * 100 + '%';
+                    s.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                    container.appendChild(s);
+                }
+            }
 
-        // ==================== SETTINGS UI ====================
-        const settingsToggle = document.getElementById('settings-toggle'),
-            panel = document.getElementById('settings-panel');
-        settingsToggle.onclick = () => panel.classList.toggle('open');
-        document.getElementById('settings-close-btn').onclick = () => panel.classList.remove('open');
+            // ===== العد التنازلي =====
+            let countdownTimer = null;
 
-        function syncSettingsUI() {
-            const s = bookData.settings;
-            document.getElementById('font-size-slider').value = s.fontSize;
-            document.getElementById('font-family-select').value = s.fontFamily;
-            document.getElementById('bg-color-picker').value = s.backgroundColor
-        }
+            function runCountdown() {
+                const el = document.getElementById('countdown-text');
+                const btn = document.getElementById('enter-btn');
+                el.style.opacity = '1';
+                btn.classList.remove('show');
+                const seq = ['٣', '٢', '١', 'حب'];
+                let i = 0;
 
-        function applySettings() {
-            const s = bookData.settings;
-            document.querySelectorAll('.swiper-slide').forEach(slide => { slide.style.fontSize = s.fontSize + 'px';
-                slide.style.fontFamily = `'${s.fontFamily}',sans-serif` });
-            document.getElementById('book-container').style.background =
-                `radial-gradient(ellipse at 50% 60%,${s.backgroundColor},#060204)`
-        }
-        document.getElementById('font-size-slider').oninput = function() { bookData.settings.fontSize = +this.value;
-            applySettings();
-            saveData() };
-        document.getElementById('font-family-select').onchange = function() { bookData.settings.fontFamily = this.value;
-            applySettings();
-            saveData() };
-        document.getElementById('bg-color-picker').oninput = function() { bookData.settings.backgroundColor = this.value;
-            applySettings();
-            saveData() };
-        document.getElementById('replay-typewriter-btn').onclick = triggerTypewriterOnActiveSlide;
+                function next() {
+                    if (i >= seq.length) {
+                        btn.classList.add('show');
+                        el.style.opacity = '0';
+                        return;
+                    }
+                    el.textContent = seq[i++];
+                    el.className = 'show';
+                    countdownTimer = setTimeout(next, 800);
+                }
+                countdownTimer = setTimeout(next, 400);
+            }
 
-        document.getElementById('add-page-btn').onclick = () => {
-            bookData.slides.splice(bookData.slides.length - 1, 0, { type: 'insta_card',
-                content: 'اكتب عبارتك الجميلة هنا...', photos: [] });
-            saveData();
-            renderSlides();
-            initSwiper();
-            swiperInstance.slideTo(bookData.slides.length - 2);
-            setTimeout(triggerTypewriterOnActiveSlide, 500)
-        };
-        document.getElementById('add-love-message-btn').onclick = () => {
-            bookData.slides.splice(bookData.slides.length - 1, 0, { type: 'love_message', title: 'رسالة حب جديدة',
-                message: 'أكتب هنا أجمل كلمات الحب...', signature: 'بحبك ♥' });
-            saveData();
-            renderSlides();
-            initSwiper();
-            swiperInstance.slideTo(bookData.slides.length - 2);
-            setTimeout(triggerTypewriterOnActiveSlide, 500)
-        };
-        document.getElementById('remove-page-btn').onclick = () => {
-            if (bookData.slides.length > 2) { bookData.slides.splice(bookData.slides.length - 2, 1);
+            // ===== مشغل الصوت =====
+            const music = document.getElementById('backgroundMusic');
+            const musicBtn = document.getElementById('music-toggle');
+            let isMusicPlaying = false;
+
+            function updateMusicButton(playing) {
+                if (playing) {
+                    musicBtn.textContent = '❚❚';
+                    musicBtn.classList.add('playing');
+                    musicBtn.title = 'إيقاف الموسيقى';
+                } else {
+                    musicBtn.textContent = '▶';
+                    musicBtn.classList.remove('playing');
+                    musicBtn.title = 'تشغيل الموسيقى';
+                }
+            }
+
+            musicBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (music.paused) {
+                    music.play().then(() => {
+                        isMusicPlaying = true;
+                        updateMusicButton(true);
+                    }).catch(() => {});
+                } else {
+                    music.pause();
+                    isMusicPlaying = false;
+                    updateMusicButton(false);
+                }
+            };
+
+            function pauseMusic() {
+                if (!music.paused) {
+                    music.pause();
+                    isMusicPlaying = false;
+                    updateMusicButton(false);
+                }
+            }
+
+            // ===== فتح / إغلاق الكتاب =====
+            document.getElementById('enter-btn').onclick = function() {
+                this.style.display = 'none';
+                window.stopMatrix();
+                if (countdownTimer) { clearTimeout(countdownTimer);
+                    countdownTimer = null; }
+                setTimeout(() => {
+                    document.getElementById('book-container').classList.add('active');
+                    document.getElementById('close-book-btn').classList.add('show');
+                    settingsToggle.classList.add('show');
+                    musicBtn.classList.add('show');
+                    generateSparkles();
+                    loadDefaultSlides();
+                }, 400);
+            };
+
+            document.getElementById('close-book-btn').onclick = function() {
+                pauseMusic();
                 saveData();
-                renderSlides();
-                initSwiper() }
-        };
-
-        // ==================== SPARKLES ====================
-        function generateSparkles() {
-            const c = document.getElementById('sparkle-container');
-            c.innerHTML = '';
-            for (let i = 0; i < 30; i++) {
-                const s = document.createElement('div');
-                s.className = 'sparkle';
-                const size = Math.random() * 3 + 1;
-                s.style.width = s.style.height = size + 'px';
-                s.style.left = Math.random() * 100 + '%';
-                s.style.animationDuration = (Math.random() * 15 + 10) + 's';
-                c.appendChild(s)
-            }
-        }
-
-        // ==================== COUNTDOWN ====================
-        function runCountdown() {
-            const el = document.getElementById('countdown-text'),
-                btn = document.getElementById('enter-btn');
-            el.style.opacity = '1';
-            btn.classList.remove('show');
-            const seq = ['٣', '٢', '١', 'حب'];
-            let i = 0;
-
-            function next() {
-                if (i >= seq.length) { btn.classList.add('show');
-                    el.style.opacity = '0'; return }
-                el.textContent = seq[i++];
-                el.className = 'show';
-                setTimeout(next, 800)
-            }
-            setTimeout(next, 400)
-        }
-
-        // ==================== MUSIC PLAYER (LOCAL MP3) ====================
-        const music = document.getElementById('backgroundMusic');
-        const musicBtn = document.getElementById('music-toggle');
-
-        // حالة التشغيل
-        let isMusicPlaying = false;
-
-        // تحديث شكل الزر
-        function updateMusicButton(playing) {
-            if (playing) {
-                musicBtn.textContent = '❚❚';
-                musicBtn.classList.add('playing');
-                musicBtn.title = 'إيقاف الموسيقى';
-            } else {
-                musicBtn.textContent = '▶';
+                document.getElementById('book-container').classList.remove('active');
+                this.classList.remove('show');
+                settingsToggle.classList.remove('show');
+                musicBtn.classList.remove('show');
                 musicBtn.classList.remove('playing');
+                musicBtn.textContent = '▶';
                 musicBtn.title = 'تشغيل الموسيقى';
-            }
-        }
+                panel.classList.remove('open');
+                if (swiperInstance) {
+                    swiperInstance.destroy(true, true);
+                    swiperInstance = null;
+                }
+                window.startMatrix();
+                runCountdown();
+                document.getElementById('enter-btn').style.display = 'none';
+                setTimeout(() => document.getElementById('enter-btn').style.display = 'block', 100);
+            };
 
-        // حدث النقر على زر الموسيقى
-        musicBtn.onclick = function(e) {
-            e.stopPropagation();
-            if (music.paused) {
-                music.play().then(() => {
-                    isMusicPlaying = true;
-                    updateMusicButton(true);
-                }).catch(err => {
-                    console.warn('فشل تشغيل الصوت:', err);
-                });
-            } else {
-                music.pause();
-                isMusicPlaying = false;
-                updateMusicButton(false);
-            }
-        };
+            // ===== اختصار لوحة المفاتيح =====
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' && document.getElementById('book-container').classList.contains('active')) {
+                    e.preventDefault();
+                    musicBtn.click();
+                }
+            }, { passive: false });
 
-        // عند انتهاء المقطع (يعاد تشغيله تلقائياً بسبب loop)
-        music.addEventListener('ended', function() {
-            // لا حاجة لفعل شيء لأن loop يعيد التشغيل
-        });
+            // ===== تحسين الأداء عند تغيير الحجم =====
+            let resizeTimer = null;
+            window.addEventListener('resize', function() {
+                if (resizeTimer) clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (document.getElementById('book-container').classList.contains('active')) {
+                        generateSparkles();
+                    }
+                    resizeTimer = null;
+                }, 300);
+            }, { passive: true });
 
-        // عند فتح الكتاب نعرض الزر
-        // عند إغلاق الكتاب نوقف الموسيقى ونخفي الزر
-        // ==================== ENTER / CLOSE BOOK ====================
-        document.getElementById('enter-btn').onclick = function() {
-            this.style.display = 'none';
-            window.stopMatrix();
-            setTimeout(() => {
-                document.getElementById('book-container').classList.add('active');
-                document.getElementById('close-book-btn').classList.add('show');
-                settingsToggle.style.display = 'flex';
-                musicBtn.classList.add('show');
-                generateSparkles();
-                loadDefaultSlides();
-                // لا نقوم بتشغيل الموسيقى تلقائياً، المستخدم يضغط عليها
-            }, 500)
-        };
-
-        document.getElementById('close-book-btn').onclick = () => {
-            // إيقاف الموسيقى عند الإغلاق
-            if (!music.paused) {
-                music.pause();
-                isMusicPlaying = false;
-                updateMusicButton(false);
-            }
-            saveData();
-            document.getElementById('book-container').classList.remove('active');
-            document.getElementById('close-book-btn').classList.remove('show');
-            settingsToggle.style.display = 'none';
-            musicBtn.classList.remove('show');
-            panel.classList.remove('open');
-            window.startMatrix();
+            // ===== بدء التشغيل =====
+            loadSavedData();
             runCountdown();
-            document.getElementById('enter-btn').style.display = 'none';
-            setTimeout(() => document.getElementById('enter-btn').style.display = 'block', 100)
-        };
 
-        // ==================== INIT ====================
-        loadSavedData();
-        runCountdown();
+            window.addEventListener('beforeunload', function() {
+                saveData();
+            }, { passive: true });
 
-        // اختصار لوحة المفاتيح: مفتاح المسافة لتشغيل/إيقاف الموسيقى داخل الكتاب
-        document.addEventListener('keydown', function(e) {
-            if (e.key === ' ' && document.getElementById('book-container').classList.contains('active')) {
-                e.preventDefault();
-                musicBtn.click();
-            }
-        });
+        })();
     </script>
 </body>
 </html>
